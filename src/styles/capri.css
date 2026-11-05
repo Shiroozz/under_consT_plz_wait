@@ -1,0 +1,357 @@
+/* Capri — pill, cut-in, roamer, tour bar.
+   Touch targets >= 44px, safe areas respected, motion respects the OS setting. */
+
+/* ================= PILL ================= */
+/* On desktop the landing marquee owns the bottom edge, so the pill sits just
+   above it. On mobile the marquee is hidden and the pill returns to the corner. */
+.capri-pill{
+  position:fixed;
+  left:max(1.25rem,env(safe-area-inset-left));
+  bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 36px);
+  z-index:90;
+  display:flex;align-items:center;gap:.7rem;
+  min-height:48px;padding:.5rem 1rem .5rem .8rem;
+  background:rgba(18,13,32,.9);
+  border:1px solid rgba(255,46,136,.42);
+  border-radius:9999px;
+  color:var(--ink,#e9e4f5);
+  font-family:var(--font-mono,'JetBrains Mono',monospace);
+  cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,0,0,.45),0 0 14px rgba(255,46,136,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  transition:transform .18s cubic-bezier(.16,1,.3,1),border-color .2s,box-shadow .2s;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.capri-pill:hover{
+  transform:translateY(-2px);border-color:var(--magenta,#ff2e88);
+  box-shadow:0 6px 24px rgba(255,46,136,.35),0 0 16px rgba(34,230,255,.2);
+}
+.capri-pill:active{transform:scale(.96)}
+.capri-pill:focus-visible{outline:2px solid var(--cyan,#22e6ff);outline-offset:3px}
+
+/* Reaction bubble anchored above the pill, same corner, same voice. */
+.capri-pill-bubble{
+  position:fixed;
+  left:max(1.25rem,env(safe-area-inset-left));
+  bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 92px);
+  z-index:90;
+  max-width:min(300px,calc(100vw - 2.5rem));
+  padding:.6rem .8rem;
+  background:rgba(18,13,32,.96);
+  border:1px solid rgba(34,230,255,.5);
+  color:var(--ink,#e9e4f5);
+  font-family:var(--font-mono,'JetBrains Mono',monospace);
+  font-size:.72rem;line-height:1.55;
+  box-shadow:0 4px 18px rgba(0,0,0,.55),0 0 12px rgba(34,230,255,.22);
+  pointer-events:none;
+  animation:capriPillBubble .2s cubic-bezier(.16,1,.3,1);
+}
+@keyframes capriPillBubble{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.capri-pill-ping{position:relative;display:flex;align-items:center;justify-content:center;width:10px;height:10px}
+.capri-pill-ping-wave{
+  position:absolute;inset:0;border-radius:50%;
+  background:var(--magenta,#ff2e88);opacity:.75;
+  animation:capriPing 1.8s cubic-bezier(0,0,.2,1) infinite;
+}
+.capri-pill-ping-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan,#22e6ff)}
+@keyframes capriPing{
+  0%{transform:scale(.9);opacity:.85}
+  75%,100%{transform:scale(2.4);opacity:0}
+}
+
+/* Two stacked lines: name, then the hour band. The band is the whole point —
+   she knows what time it is without being asked. */
+.capri-pill-txt{display:flex;flex-direction:column;gap:1px;line-height:1.1;text-align:left}
+.capri-pill-txt b{font-size:.8rem;font-weight:700;letter-spacing:.14em;color:var(--ink,#e9e4f5)}
+.capri-pill-txt i{
+  font-style:normal;font-size:.55rem;letter-spacing:.16em;color:var(--dim,#8b82a6);
+}
+.capri-pill-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;padding:0 .35rem;
+  background:var(--magenta,#ff2e88);color:#fff;border-radius:9999px;
+  font-size:.62rem;font-weight:700;line-height:1;
+}
+
+/* ================= CUT-IN ================= */
+.capri-cutin-backdrop{
+  position:fixed;inset:0;z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:1.5rem;
+  background:rgba(7,5,13,.8);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  animation:capriFade .22s ease-out;
+}
+@keyframes capriFade{from{opacity:0}to{opacity:1}}
+
+.capri-cutin-frame{
+  position:relative;width:100%;max-width:700px;
+  margin-bottom:max(1rem,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;
+}
+
+/* The portrait is cropped to head-and-shoulders; the whole art is a wide
+   banner, so we anchor it bottom-centre and let it bleed off the top.
+   overflow:hidden is load-bearing: scale(1.45) spills ~45px past the box on
+   every side and would otherwise cover the name row. The box is a deliberate
+   framed portrait panel rather than a floating cut-out — a soft mask needs
+   mask-composite, which is still patchy. */
+.capri-cutin-char{
+  position:relative;width:260px;height:200px;
+  margin-left:1.4rem;margin-bottom:-10px;z-index:2;
+  pointer-events:none;overflow:hidden;
+  border:1px solid rgba(255,46,136,.5);
+  border-bottom:0;
+  clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+  box-shadow:0 0 30px rgba(255,46,136,.25),0 10px 30px rgba(0,0,0,.7);
+}
+.capri-cutin-art{
+  width:100%;height:100%;object-fit:cover;object-position:center 18%;
+  transform:scale(1.45);
+}
+.capri-cutin-glow{
+  position:absolute;inset:-20% -10% -10%;z-index:-1;
+  background:radial-gradient(ellipse at 50% 70%,rgba(255,46,136,.35),transparent 65%);
+  filter:blur(18px);
+}
+
+.capri-cutin-box{
+  position:relative;z-index:1;
+  background:linear-gradient(135deg,rgba(18,13,32,.97),rgba(28,18,48,.95));
+  border:1px solid rgba(255,46,136,.42);
+  box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 26px rgba(255,46,136,.18);
+  padding:1.35rem 1.55rem 1.15rem;
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+  cursor:pointer;
+}
+
+.capri-cutin-header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:.8rem;padding-bottom:.5rem;
+  border-bottom:1px dashed rgba(255,46,136,.25);
+}
+.capri-cutin-name{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-disp,'Orbitron',sans-serif);
+  font-size:.9rem;font-weight:700;color:var(--cyan,#22e6ff);
+  letter-spacing:.18em;
+  text-shadow:0 0 10px rgba(34,230,255,.45);
+}
+.capri-cutin-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--magenta,#ff2e88);
+  box-shadow:0 0 8px var(--magenta,#ff2e88);
+  animation:capriBlink 1.4s steps(1) infinite;
+}
+.capri-cutin-tag{
+  font-size:.6rem;letter-spacing:.14em;color:var(--dim,#8b82a6);white-space:nowrap;
+}
+
+.capri-cutin-text{
+  font-size:.95rem;line-height:1.7;color:var(--ink,#e9e4f5);
+  min-height:4.6rem;margin:0 0 1rem;
+}
+.capri-cutin-cursor{
+  display:inline-block;width:8px;height:14px;margin-left:4px;vertical-align:middle;
+  background:var(--magenta,#ff2e88);
+  animation:capriBlink .8s infinite;
+}
+@keyframes capriBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+.capri-cutin-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.capri-cutin-count{
+  font-size:.6rem;letter-spacing:.2em;color:rgba(139,130,166,.9);
+  font-family:var(--font-mono,monospace);
+}
+.capri-cutin-actions{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}
+
+/* ---- buttons ---- */
+.capri-btn{
+  min-height:44px;padding:.5rem 1.15rem;
+  font-family:var(--font-disp,'Orbitron',sans-serif);
+  font-size:.75rem;font-weight:700;letter-spacing:.1em;
+  border-radius:3px;cursor:pointer;
+  transition:all .16s ease;
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  text-transform:lowercase;
+}
+.capri-btn-primary{
+  background:var(--magenta,#ff2e88);color:#fff;border:1px solid transparent;
+  box-shadow:0 0 14px rgba(255,46,136,.4);
+}
+.capri-btn-primary:hover{background:#ff4a98;box-shadow:0 0 22px rgba(255,46,136,.7);transform:translateY(-1px)}
+.capri-btn-primary:active{transform:scale(.97)}
+.capri-btn-ghost{
+  background:transparent;color:var(--dim,#8b82a6);
+  border:1px solid rgba(139,130,166,.35);
+}
+.capri-btn-ghost:hover{color:var(--ink,#e9e4f5);border-color:var(--cyan,#22e6ff);background:rgba(34,230,255,.06)}
+.capri-btn-quiet{
+  background:transparent;color:rgba(139,130,166,.65);
+  border:1px solid transparent;font-size:.68rem;letter-spacing:.08em;
+}
+.capri-btn-quiet:hover{color:var(--dim,#8b82a6)}
+
+/* ================= CHIP / MASK ================= */
+/* Zero-size anchor at the viewport origin: the small canvas positions itself by its
+   own translate, exactly like the desktop. The canvas is the hit target and the
+   focus ring. */
+.capri-chip{
+  position:fixed;left:0;top:0;width:0;height:0;padding:0;border:0;
+  background:none;z-index:91;
+}
+.capri-chip:focus-visible{outline:none}
+.capri-chip-canvas{
+  position:absolute;left:0;top:0;
+  pointer-events:auto;cursor:pointer;
+  border-radius:8px;
+}
+.capri-chip:focus-visible .capri-chip-canvas{
+  outline:2px solid var(--cyan,#22e6ff);outline-offset:3px;
+}
+.mask-doze{position:fixed;left:0;top:0;z-index:56;pointer-events:none}
+
+/* ================= FX ================= */
+/* Full-viewport effects: never between the visitor and the page. */
+.capri-fx{
+  position:fixed;inset:0;z-index:60;
+  pointer-events:none;
+}
+
+/* ================= ROAMER ================= */
+.capri-roamer{
+  position:fixed;left:0;top:0;z-index:55;
+  pointer-events:none; /* the engine hit-tests at the window level, nothing here eats clicks */
+  user-select:none;-webkit-tap-highlight-color:transparent;
+  will-change:transform;
+}
+
+.capri-bubble-anchor{
+  position:fixed;left:0;top:0;z-index:58;
+  pointer-events:none;
+  will-change:transform;
+}
+.capri-bubble{
+  display:flex;align-items:flex-start;gap:.6rem;
+  width:max-content;
+  max-width:min(320px,82vw);
+  background:rgba(18,13,32,.96);
+  border:1px solid rgba(34,230,255,.55);
+  border-radius:6px;
+  padding:.55rem .85rem .55rem .55rem;
+  color:var(--ink,#e9e4f5);
+  font-family:var(--font-mono,monospace);
+  font-size:.78rem;line-height:1.55;
+  box-shadow:0 4px 18px rgba(0,0,0,.6),0 0 14px rgba(34,230,255,.25);
+  animation:capriBubble .2s cubic-bezier(.16,1,.3,1);
+  text-wrap:pretty;
+}
+/* her portrait plate, the desktop panel's face */
+.capri-bubble-face{
+  flex:0 0 auto;width:44px;height:44px;overflow:hidden;
+  border:1px solid rgba(255,46,136,.5);
+  border-radius:4px;
+  background:rgba(255,46,136,.08);
+}
+.capri-bubble-face img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.capri-bubble-face img.is-swapping{animation:capriFaceSwap .18s steps(2)}
+@keyframes capriFaceSwap{
+  0%{filter:hue-rotate(90deg) saturate(3);transform:translateX(2px)}
+  50%{filter:invert(1);transform:translateX(-2px)}
+  100%{filter:none;transform:none}
+}
+.capri-bubble-text{flex:1;min-width:0}
+/* what she's doing, over her mane, only while she isn't talking */
+.capri-ticker{
+  position:fixed;left:0;top:0;z-index:58;pointer-events:none;
+  font-family:var(--font-mono,monospace);
+  font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--cyan,#22e6ff);
+  background:rgba(18,13,32,.85);
+  border:1px solid rgba(34,230,255,.35);
+  border-radius:3px;
+  padding:.15rem .5rem;
+  will-change:transform;
+}
+.capri-ticker i{color:var(--magenta,#ff2e88);font-style:normal}
+.capri-sr{
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+}
+/* the sleep mask canvas: placed by its own translate from the viewport origin,
+   like the desktop's small canvases */
+.capri-mask{
+  position:fixed;left:0;top:0;z-index:56;pointer-events:none;
+}
+@keyframes capriBubble{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+/* ================= TOUR BAR ================= */
+.capri-tour{
+  position:fixed;left:50%;bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 40px);
+  transform:translateX(-50%);
+  z-index:92;
+  width:min(560px,calc(100vw - 2rem));
+  display:flex;align-items:center;gap:14px;
+  padding:.7rem .9rem .7rem 1rem;
+  background:rgba(13,9,24,.94);
+  border:1px solid rgba(255,46,136,.4);
+  box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 22px rgba(255,46,136,.16);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));
+  animation:capriTourIn .3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes capriTourIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+
+.capri-tour-rail{
+  display:flex;flex-direction:column;gap:3px;flex:0 0 auto;
+}
+.capri-tour-tick{
+  width:3px;height:6px;background:rgba(255,255,255,.14);
+  transition:background .2s,height .2s;
+}
+.capri-tour-tick.on{background:var(--magenta,#ff2e88);box-shadow:0 0 6px rgba(255,46,136,.7)}
+
+.capri-tour-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.capri-tour-step{font-size:.55rem;letter-spacing:.2em;color:var(--dim,#8b82a6)}
+.capri-tour-copy b{
+  font-family:var(--font-disp,'Orbitron',sans-serif);
+  font-size:.8rem;font-weight:700;letter-spacing:.1em;color:var(--ink,#e9e4f5);
+}
+.capri-tour-actions{display:flex;gap:.4rem;flex:0 0 auto}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:640px){
+  .capri-cutin-backdrop{padding:.7rem}
+  .capri-cutin-char{width:190px;height:150px;margin-left:.7rem;margin-bottom:-16px}
+  .capri-cutin-box{padding:1.05rem 1.1rem .95rem}
+  .capri-cutin-text{font-size:.86rem;min-height:4.2rem}
+  .capri-cutin-tag{display:none}
+  .capri-cutin-foot{flex-direction:column;align-items:stretch;gap:.7rem}
+  .capri-cutin-actions{justify-content:stretch}
+  .capri-btn{flex:1}
+
+  /* Clear the mobile bottom bar (56px + safe area), not just the screen edge. */
+  .capri-pill{padding:.45rem .8rem .45rem .65rem;min-height:46px;bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 64px)}
+  .capri-pill-bubble{bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 120px)}
+  .capri-pill-txt i{display:none}
+
+  /* The tour bar must clear the pill on small screens. */
+  .capri-tour{
+    bottom:calc(max(1.25rem,env(safe-area-inset-bottom)) + 58px);
+    width:calc(100vw - 1.5rem);
+    gap:10px;padding:.6rem .7rem;
+  }
+  .capri-tour-copy b{font-size:.72rem}
+  .capri-tour-actions .capri-btn{padding:.45rem .7rem;font-size:.68rem;min-height:40px;flex:0 0 auto}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .capri-pill-ping-wave,.capri-cutin-dot,.capri-cutin-cursor{animation:none}
+  .capri-cutin-backdrop,.capri-bubble,.capri-tour{animation:none}
+  .capri-bubble-face img.is-swapping{animation:none}
+}

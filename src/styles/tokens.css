@@ -1,0 +1,15 @@
+:root{
+  --bg:#07050d;
+  --bg-2:#0d0918;
+  --panel:#120d20;
+  --ink:#e9e4f5;
+  --dim:#8b82a6;
+  --magenta:#ff2e88;
+  --cyan:#22e6ff;
+  --amber:#ffc65c;
+  --line:rgba(255,46,136,.28);
+  --max:1180px;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --font-disp:'Orbitron',sans-serif;
+  --font-pixel:'Press Start 2P',monospace;
+}

@@ -1,0 +1,101 @@
+/* Under-construction page. Everything here is the frame around Capri; her own
+   look lives in capri.css, copied from porto-3 unchanged. */
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.uc { position: relative; height: 100svh; overflow: hidden; isolation: isolate; }
+
+/* the matrix rain, slow enough to read as a wall, not a strobe */
+.uc-bg {
+  position: absolute; inset: -2%;
+  background: url('/assets/matrix.gif') center 45% / cover no-repeat;
+  opacity: .55;
+  filter: saturate(.7) contrast(1.15);
+  animation: ucDrift 60s ease-in-out infinite alternate;
+}
+@keyframes ucDrift {
+  from { transform: scale(1.02) translate3d(-.4%, 0, 0); }
+  to   { transform: scale(1.05) translate3d(.4%, -.6%, 0); }
+}
+
+.uc-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(1100px 620px at 78% -8%, rgba(255, 46, 136, .18), transparent 62%),
+    radial-gradient(820px 520px at 6% 32%, rgba(34, 230, 255, .10), transparent 60%),
+    linear-gradient(180deg, rgba(7, 5, 13, .55) 0%, rgba(7, 5, 13, .35) 34%, rgba(7, 5, 13, .82) 78%, rgba(7, 5, 13, .96) 100%);
+}
+
+.uc-scan {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay; opacity: .5;
+}
+
+.uc-vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 92% at 50% 46%, transparent 50%, rgba(0,0,0,.75) 100%);
+}
+
+.uc-top {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 70;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px clamp(16px, 4vw, 40px);
+  pointer-events: none;
+}
+
+.uc-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-disp); font-weight: 900;
+  font-size: 14px; letter-spacing: .24em;
+}
+.uc-brand i {
+  width: 8px; height: 8px; background: var(--magenta);
+  box-shadow: 0 0 14px var(--magenta);
+  animation: ucBlink 1.6s steps(1) infinite;
+}
+@keyframes ucBlink { 50% { opacity: .15; } }
+
+.uc-status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; letter-spacing: .24em;
+  color: var(--amber);
+  border: 1px solid var(--line);
+  padding: 7px 11px;
+  background: rgba(7, 5, 13, .55);
+}
+.uc-status i {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 10px var(--amber);
+}
+
+.uc-foot {
+  position: absolute; left: 0; right: 0; bottom: 18px; z-index: 70;
+  margin: 0; text-align: center;
+  font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--dim);
+  pointer-events: none;
+}
+
+.uc-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .uc-status { font-size: 8px; letter-spacing: .16em; padding: 6px 8px; }
+  .uc-brand { font-size: 12px; letter-spacing: .2em; }
+  .uc-foot { font-size: 8px; letter-spacing: .2em; bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uc-bg, .uc-brand i { animation: none; }
+}
