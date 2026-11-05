@@ -72,6 +72,7 @@ export default function CapriRoaming({ visible, voice, bubble, bubbleFace, fxRef
         });
         roamer.onAct = (name) => setActVerb(tickerVerbFor(name));
         roamerRef.current = roamer;
+        window.__roamer = roamer;
         if (onReadyRef.current) {
           onReadyRef.current(roamer);
         } else {

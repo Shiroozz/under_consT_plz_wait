@@ -45,6 +45,7 @@ export default function CapriFxCanvas({ fxRef }) {
       window.addEventListener('resize', size);
       cleanupSize = () => window.removeEventListener('resize', size);
       fxRefInner.current.current = layer;
+      window.__fx = layer;
     };
     run();
 
@@ -52,6 +53,7 @@ export default function CapriFxCanvas({ fxRef }) {
       dead = true;
       cleanupSize?.();
       fxRefInner.current.current = null;
+      window.__fx = null;
     };
   }, []);
 

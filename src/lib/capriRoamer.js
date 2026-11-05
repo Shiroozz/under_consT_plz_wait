@@ -95,10 +95,10 @@ export class Roamer {
 
     const now = performance.now();
     this.lastActivity = now;
-    this.nextTwitch = now + rand(4000, 9000);
-    this.nextMove = now + rand(40000, 80000);
-    this.nextGaze = now + rand(40000, 90000);
-    this.nextShed = now + rand(3000, 8000);
+    this.nextTwitch = now + rand(1500, 3500);
+    this.nextMove = now + rand(2500, 5000);
+    this.nextGaze = now + rand(20000, 45000);
+    this.nextShed = now + rand(2000, 5000);
     this.nextNotice = 0;
     this.peekUntil = 0;
     this.sleptAt = 0;
@@ -427,18 +427,18 @@ export class Roamer {
     if (this.busy || this.dragging) return;
 
     if (now > this.nextTwitch) {
-      this.nextTwitch = now + rand(5000, 13000);
+      this.nextTwitch = now + rand(2000, 5000);
       if (!reducedMotion.matches && this.mode !== 'sleep') this.twitch();
     }
 
     // a shard of her mane breaks off now and then and drifts away
     if (now > this.nextShed) {
-      this.nextShed = now + rand(4000, 11000) * (this.mode === 'sleep' ? 2.5 : 1);
+      this.nextShed = now + rand(3000, 7000) * (this.mode === 'sleep' ? 2.5 : 1);
       if (!reducedMotion.matches && this.stance !== 'peek') this.shed();
     }
 
     if (this.mode === 'idle' && this.stance !== 'peek' && now > this.nextGaze) {
-      this.nextGaze = now + rand(90000, 180000);
+      this.nextGaze = now + rand(40000, 80000);
       this.gaze();
     }
 
@@ -454,35 +454,29 @@ export class Roamer {
     }
 
     if (this.mode === 'idle' && now > this.nextMove) {
-      this.nextMove = now + rand(25000, 70000);
+      this.nextMove = now + rand(3000, 6500);
       this.wanderStep();
     }
   }
 
-  // What she does with herself when nobody needs her.
+  // What she does with herself when nobody needs her: petakilan / lively.
   wanderStep() {
-    if (this.stance === 'peek') return;
-    const canPossess = this.canPossess();
-    if (this.stance === 'sit') {
-      const move = wanderChoice(Math.random(), 'sit', canPossess);
-      if (move === 'flourish') this.flourish();
-      else if (move === 'possess') this.possess();
-      else if (move === 'fall') this.fall(); // just hops off the ledge
-      else this.teleport(this.spot('random'));
-      return;
+    if (this.stance === 'peek' || this.busy) return;
+    const r = Math.random();
+    if (r < 0.28) {
+      this.perform(pick(['hop', 'hop', 'victory']));
+    } else if (r < 0.52) {
+      this.perform(pick(['spin', 'curious', 'turn', 'split']), this.towardCenter());
+    } else if (r < 0.78) {
+      this.teleport(this.spot('random'));
+    } else {
+      this.peek();
     }
-    const wins = this.findWins();
-    const seat = this.pickSeat({ wins });
-    const move = wanderChoice(Math.random(), 'stand', false, Boolean(seat));
-    if (move === 'sit') this.sitOn(seat);
-    else if (move === 'peek') this.peek();
-    else if (move === 'teleport') this.teleport(this.spot('random'));
-    else this.flourish();
   }
 
   flourish() {
     if (this.stance === 'sit') this.perform(pick(['look', 'look', 'split']));
-    else this.perform(pick(['spin', 'look', 'hop', 'curious', 'split']), this.towardCenter());
+    else this.perform(pick(['spin', 'look', 'hop', 'curious', 'split', 'victory']), this.towardCenter());
   }
 
   // ---------- acting ----------
@@ -990,10 +984,10 @@ export class Roamer {
     await this.settle();
   }
 
-  // After a move: free again, stay put a while, and the move that was waiting, if any.
+  // After a move: free again, stay put a little, then keep active.
   async settle() {
     this.busy = false;
-    this.nextMove = Math.max(this.nextMove, performance.now() + rand(25000, 60000));
+    this.nextMove = performance.now() + rand(2500, 5000);
     this.onTeleport?.('end');
     if (this.pending) {
       const next = this.pending;
@@ -1235,7 +1229,7 @@ export class Roamer {
       }
     }
     this.peekFrom = from;
-    this.peekUntil = performance.now() + rand(15000, 40000);
+    this.peekUntil = performance.now() + rand(3500, 6500);
     this.busy = false;
     this.onTeleport?.('end');
   }
@@ -1551,7 +1545,7 @@ export class Roamer {
       return;
     }
     this.voice.play('star');
-    this.perform('curious', this.towardCenter());
+    this.perform(pick(['curious', 'hop', 'spin', 'victory']), this.towardCenter());
     this.onPoke?.();
   }
 

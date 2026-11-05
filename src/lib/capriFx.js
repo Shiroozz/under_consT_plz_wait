@@ -590,12 +590,15 @@ export class FxLayer {
   intro({ to, label = 'hi', caption = '', still = false, onCue = () => {} }) {
     if (!this.grab || !this.size) return Promise.resolve();
     const { w, h } = this.size;
-    const s = Math.max(w / GRAB.w, h / GRAB.h); // filling the screen, her hands on its edges
-    const at = { x: (w - GRAB.w * s) / 2 + GRAB.face.x * s, y: (h - GRAB.h * s) / 2 + GRAB.face.y * s };
+    const isMobile = w < 768 || w < h;
+    const s = isMobile ? (w / GRAB.w) * 1.05 : Math.max(w / GRAB.w, h / GRAB.h);
+    const at = isMobile
+      ? { x: w / 2, y: h * 0.36 }
+      : { x: (w - GRAB.w * s) / 2 + GRAB.face.x * s, y: (h - GRAB.h * s) / 2 + GRAB.face.y * s };
     // the dive swings out a little toward the middle of the screen on its way down to her
     const ctrl = { x: lerp(at.x, to.x, 0.25) - (to.x - at.x) * 0.2, y: lerp(at.y, to.y, 0.15) };
     return new Promise((land) => {
-      this.add({ type: 'intro', smooth: true, life: FRAME_MS * (INTRO_T.end + 1), s, at, to, ctrl, label, caption, still, onCue, land, cued: -1 });
+      this.add({ type: 'intro', smooth: true, life: FRAME_MS * (INTRO_T.end + 1), s, at, to, ctrl, label, caption, still, onCue, land, cued: -1, isMobile });
     });
   }
 
@@ -1525,11 +1528,14 @@ export class FxLayer {
 
         // "hi" on its tag by her face, popping in, her name typed under it
         const tagAt = onScreen(GRAB.tag);
-        const fs = Math.round(clamp(vh * 0.06, 40, 76));
+        const fs = it.isMobile ? Math.round(clamp(vw * 0.08, 22, 34)) : Math.round(clamp(vh * 0.06, 40, 76));
         const hi = (k = 1, ky = 1) => {
-          this.hiTag(tagAt.x, tagAt.y, it.label, fs, k, ky);
+          const tx = it.isMobile ? Math.min(tagAt.x, vw - fs * 2.2) : tagAt.x;
+          this.hiTag(tx, tagAt.y, it.label, fs, k, ky);
           if (it.caption && frame >= T.hi + 6 && ky === 1) {
-            this.typed(tagAt.x + fs * 0.5, tagAt.y + fs * 1.15, it.caption, it.caption.slice(0, (frame - T.hi - 6) * 2), frame);
+            const capText = it.isMobile ? 'SHIROO' : it.caption;
+            const cx = it.isMobile ? tx - 10 : tx + fs * 0.5;
+            this.typed(cx, tagAt.y + fs * 1.15, capText, capText.slice(0, (frame - T.hi - 6) * 2), frame);
           }
         };
         // her eyes: centred as she lands, darting left and right, on you for "hi", a blink, then
