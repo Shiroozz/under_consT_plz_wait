@@ -228,6 +228,10 @@
   will-change:transform;
 }
 
+.capri-canvas{
+  touch-action:none; /* adaptation: without this the browser claims the drag as a scroll */
+}
+
 .capri-bubble-anchor{
   position:fixed;left:0;top:0;z-index:58;
   pointer-events:none;

@@ -31,7 +31,7 @@ export function buildAlphaMap(image) {
 // Is screen point (x, y) on her body? `s` is the roaming state:
 // { pos:{x,y}, bob, scale, facing, upside, sit (0..1 pose value), alpha, hidden }
 // Pure: alpha is the RGBA data from buildAlphaMap (or a test silhouette).
-export function hitAt(alpha, x, y, s) {
+export function hitAt(alpha, x, y, s, radius = 8) {
   if (s.hidden || s.alpha < 0.5) return false;
   const sc = s.scale;
   const fy = s.pos.y + s.bob;
@@ -46,10 +46,13 @@ export function hitAt(alpha, x, y, s) {
     const c = lerp(1, 0.3, s.sit);
     sy = sy <= SPRITE.hip + THIGH * c ? SPRITE.hip + (sy - SPRITE.hip) / c : sy + THIGH * (1 - c);
   }
-  for (const [dx, dy] of [[0, 0], [4, 0], [-4, 0], [0, 4], [0, -4]]) {
-    const px = Math.round(sx + dx), py = Math.round(sy + dy);
-    if (px < 0 || py < 0 || px >= SPRITE.width || py >= SPRITE.height) continue;
-    if (alpha[(py * SPRITE.width + px) * 4 + 3] > 40) return true;
+  const step = Math.max(3, Math.round(radius / 2));
+  for (let dy = -radius; dy <= radius; dy += step) {
+    for (let dx = -radius; dx <= radius; dx += step) {
+      const px = Math.round(sx + dx), py = Math.round(sy + dy);
+      if (px < 0 || py < 0 || px >= SPRITE.width || py >= SPRITE.height) continue;
+      if (alpha[(py * SPRITE.width + px) * 4 + 3] > 30) return true;
+    }
   }
   return false;
 }

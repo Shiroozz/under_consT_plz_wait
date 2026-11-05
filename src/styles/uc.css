@@ -11,7 +11,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.uc { position: relative; height: 100svh; overflow: hidden; isolation: isolate; }
+.uc { position: relative; height: 100svh; overflow: hidden; isolation: isolate; touch-action: none; }
 
 /* the matrix rain, slow enough to read as a wall, not a strobe */
 .uc-bg {
@@ -76,6 +76,14 @@ body {
   width: 5px; height: 5px; border-radius: 50%;
   background: var(--amber); box-shadow: 0 0 10px var(--amber);
 }
+
+/* she noticed you: the status line turns red before she speaks */
+.uc-status.is-alert {
+  color: var(--magenta);
+  border-color: rgba(255, 46, 136, .55);
+  box-shadow: 0 0 18px rgba(255, 46, 136, .28);
+}
+.uc-status.is-alert i { background: var(--magenta); box-shadow: 0 0 12px var(--magenta); }
 
 .uc-foot {
   position: absolute; left: 0; right: 0; bottom: 18px; z-index: 70;

@@ -72,8 +72,11 @@ export default function CapriRoaming({ visible, voice, bubble, bubbleFace, fxRef
         });
         roamer.onAct = (name) => setActVerb(tickerVerbFor(name));
         roamerRef.current = roamer;
-        onReadyRef.current?.(roamer);
-        roamer.materialize(); // she beams in where she lands, like the desktop on launch
+        if (onReadyRef.current) {
+          onReadyRef.current(roamer);
+        } else {
+          roamer.materialize();
+        }
       } catch (err) {
         console.error('Failed to init Capri WebGL renderer', err);
       }

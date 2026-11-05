@@ -178,12 +178,13 @@ export class Roamer {
     return { x: at.x + dx, y: at.y - dy + bob, top: at.y - SPRITE.feet.y * s + bob };
   }
 
-  hit(x, y) {
+  hit(x, y, radius) {
     if (this.hidden || this.stowed || this.dormant) return false;
+    const r = radius ?? (this.scale < 0.7 ? 20 : 8);
     return hitAt(this.alphaMap, x, y, {
       pos: this.pos, bob: this.bob, scale: this.scale, facing: this.facing,
       upside: this.upside, sit: this.p.sit, alpha: this.p.alpha, hidden: this.hidden,
-    });
+    }, r);
   }
 
   faceCenter() {
@@ -1449,11 +1450,13 @@ export class Roamer {
     let down = null;
     this.onDown = (e) => {
       this.mouse = { x: e.clientX, y: e.clientY };
-      if (e.button !== 0 || this.busy || !this.hit(e.clientX, e.clientY)) return;
+      const isTouch = e.pointerType === 'touch';
+      const hitRadius = isTouch ? 28 : 8;
+      if ((!isTouch && e.button !== 0) || this.busy || !this.hit(e.clientX, e.clientY, hitRadius)) return;
       if (e.cancelable) e.preventDefault(); // adaptation: touch would scroll the page instead of lifting her
-      down = { x: e.clientX, y: e.clientY, pos: { ...this.pos }, t: performance.now() };
+      down = { x: e.clientX, y: e.clientY, pos: { ...this.pos }, t: performance.now(), pointerId: e.pointerId };
       try {
-        e.target.setPointerCapture?.(e.pointerId);
+        e.target?.setPointerCapture?.(e.pointerId);
       } catch {
         // capture is a nicety
       }
@@ -1473,9 +1476,11 @@ export class Roamer {
         return;
       }
       if (down) {
+        if (e.cancelable) e.preventDefault();
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
-        if (!this.dragging && Math.hypot(dx, dy) > 5 && !this.busy) {
+        if (!this.dragging && Math.hypot(dx, dy) > (e.pointerType === 'touch' ? 3 : 5) && !this.busy) {
           this.dragging = true;
+          this.wasDragging = true;
           if (this.upside) {
             // flip back upright under the pointer
             down.pos = { x: down.pos.x, y: down.pos.y + (SPRITE.feet.y - SPRITE.head.y) * this.scale };
@@ -1501,10 +1506,11 @@ export class Roamer {
     this.onUpWin = (e) => {
       if (!down) return;
       const wasDragging = this.dragging;
-      const quick = performance.now() - down.t < 280;
-      const still = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 12;
+      const quick = performance.now() - down.t < 350;
+      const still = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 14;
       down = null;
       this.dragging = false;
+      setTimeout(() => { this.wasDragging = false; }, 120);
       if (wasDragging) {
         tween(this.p, { glitch: 0, split: 0 }, 200, ease.out);
         this.drop();
@@ -1519,12 +1525,13 @@ export class Roamer {
       down = null;
       if (this.dragging) {
         this.dragging = false;
+        setTimeout(() => { this.wasDragging = false; }, 120);
         tween(this.p, { glitch: 0, split: 0 }, 200, ease.out);
         this.drop();
       }
     };
-    window.addEventListener('pointerdown', this.onDown);
-    window.addEventListener('pointermove', this.onMoveWin);
+    window.addEventListener('pointerdown', this.onDown, { passive: false });
+    window.addEventListener('pointermove', this.onMoveWin, { passive: false });
     window.addEventListener('pointerup', this.onUpWin);
     window.addEventListener('pointercancel', this.onCancelWin);
   }

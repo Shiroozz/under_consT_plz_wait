@@ -12,9 +12,18 @@ const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 // never had to ask). Until the visitor touches something, cues are silently dropped.
 let gestured = false;
 if (typeof window !== 'undefined') {
-  const arm = () => { gestured = true; };
-  window.addEventListener('pointerdown', arm, { once: true, capture: true });
-  window.addEventListener('keydown', arm, { once: true, capture: true });
+  const arm = () => {
+    gestured = true;
+    try {
+      if (window.__capriVoice?.ctx?.state === 'suspended') {
+        window.__capriVoice.ctx.resume().catch(() => {});
+      }
+    } catch {}
+  };
+  window.addEventListener('pointerdown', arm, { capture: true });
+  window.addEventListener('touchstart', arm, { capture: true });
+  window.addEventListener('keydown', arm, { capture: true });
+  window.addEventListener('click', arm, { capture: true });
 }
 
 export const CUES = [
@@ -45,27 +54,39 @@ export class Voice {
   }
 
   ensure() {
-    if (this.ctx) return this.ctx;
-    if (!gestured) return null;
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended' && gestured) {
+        this.ctx.resume().catch(() => {});
+      }
+      return this.ctx;
+    }
     if (typeof window === 'undefined') return null;
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return null;
-    const ctx = new AudioCtx();
-    this.ctx = ctx;
-    this.master = ctx.createGain();
-    this.master.gain.value = this.volume;
+    try {
+      const ctx = new AudioCtx();
+      this.ctx = ctx;
+      window.__capriVoice = this;
+      this.master = ctx.createGain();
+      this.master.gain.value = this.volume;
 
-    // soft clip so stacked cues never get harsh
-    const shaper = ctx.createWaveShaper();
-    const curve = new Float32Array(1024);
-    for (let i = 0; i < curve.length; i++) {
-      const x = (i / (curve.length - 1)) * 2 - 1;
-      curve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6);
+      // soft clip so stacked cues never get harsh
+      const shaper = ctx.createWaveShaper();
+      const curve = new Float32Array(1024);
+      for (let i = 0; i < curve.length; i++) {
+        const x = (i / (curve.length - 1)) * 2 - 1;
+        curve[i] = Math.tanh(x * 1.6) / Math.tanh(1.6);
+      }
+      shaper.curve = curve;
+      this.master.connect(shaper).connect(ctx.destination);
+      this.noise = this.makeNoise();
+      if (ctx.state === 'suspended' && gestured) {
+        ctx.resume().catch(() => {});
+      }
+      return ctx;
+    } catch {
+      return null;
     }
-    shaper.curve = curve;
-    this.master.connect(shaper).connect(ctx.destination);
-    this.noise = this.makeNoise();
-    return ctx;
   }
 
   configure({ muted, volume }) {
