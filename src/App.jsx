@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import CapriRoaming from './components/capri/CapriRoaming.jsx';
 import CapriFxCanvas from './components/capri/CapriFxCanvas.jsx';
-import SignalBox from './components/SignalBox.jsx';
+import Direction1_BarBulletin from './components/signals/Direction1_BarBulletin.jsx';
+import Direction2_NetrunnerDeck from './components/signals/Direction2_NetrunnerDeck.jsx';
+import Direction3_HoloHUD from './components/signals/Direction3_HoloHUD.jsx';
 import { Voice } from './lib/capriVoice.js';
 import './styles/capri.css';
 
@@ -16,8 +18,6 @@ const LINES = [
 
 const HOLD_MS = 6000;
 
-/* The FX layer loads her intro cels asynchronously; `intro()` silently falls back
-   to a plain materialize when they are not there yet. Wait for them. */
 function waitForGrab(fxRef, tries = 60) {
   return new Promise((resolve) => {
     const poll = (n) => {
@@ -34,6 +34,12 @@ export default function App() {
   const [step, setStep] = useState(-1);
   const [face, setFace] = useState('calm');
   const [alerted, setAlerted] = useState(false);
+  const [direction, setDirection] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const d = parseInt(params.get('dir'), 10);
+    return d >= 1 && d <= 3 ? d : 1;
+  });
+
   const fxRef = useRef(null);
   const roamerRef = useRef(null);
   const timer = useRef(null);
@@ -42,8 +48,6 @@ export default function App() {
   if (!voiceRef.current) voiceRef.current = new Voice();
   const voice = voiceRef.current;
 
-  /* Browsers refuse to start audio before a gesture. The page has no button, so
-     the first tap or keypress arms the synth; before that cues are dropped. */
   useEffect(() => {
     const arm = () => { voice.ensure(); };
     window.addEventListener('pointerdown', arm, { once: true, capture: true });
@@ -83,7 +87,6 @@ export default function App() {
     }
   }, [step, voice]);
 
-  /* Her full screen-grab intro, then an alarm take, then the first line. */
   const greeted = useRef(null);
   const onReady = useCallback(async (roamer) => {
     if (!roamer || greeted.current === roamer) return;
@@ -98,7 +101,6 @@ export default function App() {
     });
     if (roamer.dead) return;
 
-    /* She noticed you: mane up, eyes on the door, before she says anything. */
     setAlerted(true);
     setFace('wide');
     voice.play('alert');
@@ -128,12 +130,46 @@ export default function App() {
     }
   }, []);
 
+  const switchDir = (d) => {
+    voice.play('tick');
+    setDirection(d);
+    const url = new URL(window.location);
+    url.searchParams.set('dir', d);
+    window.history.replaceState({}, '', url);
+  };
+
   return (
     <div className="uc" onClick={onStage}>
       <div className="uc-bg" aria-hidden="true" />
       <div className="uc-veil" aria-hidden="true" />
       <div className="uc-scan" aria-hidden="true" />
       <div className="uc-vignette" aria-hidden="true" />
+
+      {/* Floating Direction Switcher Bar */}
+      <nav className="direction-switcher" onClick={(e) => e.stopPropagation()} aria-label="Pilih Arah UI">
+        <span className="dir-badge">UI EXPLORE:</span>
+        <button
+          type="button"
+          className={`dir-btn ${direction === 1 ? 'is-active' : ''}`}
+          onClick={() => switchDir(1)}
+        >
+          1: BAR BULLETIN
+        </button>
+        <button
+          type="button"
+          className={`dir-btn ${direction === 2 ? 'is-active' : ''}`}
+          onClick={() => switchDir(2)}
+        >
+          2: NETRUNNER CLI
+        </button>
+        <button
+          type="button"
+          className={`dir-btn ${direction === 3 ? 'is-active' : ''}`}
+          onClick={() => switchDir(3)}
+        >
+          3: HOLO HUD
+        </button>
+      </nav>
 
       <header className="uc-top">
         <span className="uc-brand"><i aria-hidden="true" />SHIROO</span>
@@ -155,7 +191,16 @@ export default function App() {
         onReady={onReady}
       />
 
-      <SignalBox voice={voice} onSignalSent={handleSignalSent} />
+      {/* Render selected UI direction */}
+      {direction === 1 && (
+        <Direction1_BarBulletin voice={voice} onSignalSent={handleSignalSent} />
+      )}
+      {direction === 2 && (
+        <Direction2_NetrunnerDeck voice={voice} onSignalSent={handleSignalSent} />
+      )}
+      {direction === 3 && (
+        <Direction3_HoloHUD voice={voice} onSignalSent={handleSignalSent} />
+      )}
 
       <p className="uc-sr" role="status">
         {text || 'web ini sedang dibangun. shiroo sedang di hackathon. silakan kembali lagi nanti.'}
