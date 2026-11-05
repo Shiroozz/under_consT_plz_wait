@@ -93,6 +93,68 @@ body {
   pointer-events: none;
 }
 
+/* ================= HAZARD INTERCEPT AESTHETIC ================= */
+.scene-hazard {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
+}
+.hazard-watermark {
+  position: absolute;
+  top: 48%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  font-family: var(--font-disp);
+  font-size: clamp(60px, 14vw, 190px);
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  color: rgba(255, 46, 136, 0.04);
+  -webkit-text-stroke: 1.5px rgba(255, 46, 136, 0.15);
+  user-select: none;
+  white-space: nowrap;
+}
+.hazard-ribbon {
+  position: absolute;
+  width: 170vw;
+  left: -35vw;
+  background: #ffc65c;
+  color: #120900;
+  padding: 8px 0;
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 198, 92, 0.5);
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.hazard-ribbon.ribbon-top {
+  top: 22%;
+  transform: rotate(-6deg);
+}
+.hazard-ribbon.ribbon-bottom {
+  bottom: 18%;
+  transform: rotate(5deg);
+  background: var(--magenta);
+  color: #1a0014;
+  box-shadow: 0 6px 26px rgba(0,0,0,0.9), 0 0 20px rgba(255, 46, 136, 0.6);
+}
+.hazard-track {
+  display: inline-block;
+  animation: hazardScroll 35s linear infinite;
+}
+.hazard-track.rev {
+  animation: hazardScrollRev 40s linear infinite;
+}
+@keyframes hazardScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes hazardScrollRev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.hazard-corner {
+  position: absolute; width: 36px; height: 36px; border: 2px solid var(--cyan);
+}
+.hazard-corner.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+.hazard-corner.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+.hazard-corner.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+.hazard-corner.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
 .uc-sr {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap;
@@ -102,8 +164,12 @@ body {
   .uc-status { font-size: 8px; letter-spacing: .16em; padding: 6px 8px; }
   .uc-brand { font-size: 12px; letter-spacing: .2em; }
   .uc-foot { font-size: 8px; letter-spacing: .2em; bottom: 12px; }
+  .hazard-ribbon { padding: 6px 0; font-size: 9px; letter-spacing: 0.16em; }
+  .hazard-ribbon.ribbon-top { top: 16%; }
+  .hazard-ribbon.ribbon-bottom { bottom: 12%; }
+  .hazard-corner { width: 22px; height: 22px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .uc-bg, .uc-brand i { animation: none; }
+  .uc-bg, .uc-brand i, .hazard-track { animation: none; }
 }
