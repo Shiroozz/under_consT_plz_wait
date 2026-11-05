@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import CapriRoaming from './components/capri/CapriRoaming.jsx';
 import CapriFxCanvas from './components/capri/CapriFxCanvas.jsx';
+import SignalBox from './components/SignalBox.jsx';
 import { Voice } from './lib/capriVoice.js';
 import './styles/capri.css';
 
-/* What she says, in order. The last line stays on screen — this is the page's
-   whole message, not a chat that ends and leaves nothing behind. */
+/* What she says, in order (Option D with custom edits).
+   The last line stays on screen so visitors always see the closing remark. */
 const LINES = [
-  ['eh. ada yang buka pintunya.', 'look'],
-  ['web ini belum jadi. shiroo lagi di hackathon, jadi bar-nya tutup dulu.', 'calm'],
-  ['nggak ada menu, nggak ada yang bisa dipesan. cuma aku yang jaga di sini.', 'smug'],
-  ['balik lagi nanti ya. kalau udah selesai, aku yang pertama nyuruh kamu masuk.', 'look'],
+  ['...kamu beneran nyasar sampe sini?', 'aside'],
+  ['webnya under construction, shiroo nya lagi fokus hackathon cenah.', 'calm'],
+  ['tapi karena kamu udah terlanjur liat... ya gapapa sih, liatin aja aku dulu.', 'smug'],
+  ['nanti kalau webnya udah beres, balik lagi. awas kalau nggak.', 'look'],
 ];
 
 const HOLD_MS = 6000;
@@ -69,9 +70,20 @@ export default function App() {
     return () => clearTimeout(timer.current);
   }, [step, advance]);
 
-  /* Her full screen-grab intro, then an alarm take, then the first line.
-     Guard on the roamer identity, not a ref: StrictMode remounts this effect,
-     and a plain flag would leave the second (real) roamer ungreeted. */
+  /* On line 4 ("awas kalau nggak"): she performs lively hops! */
+  useEffect(() => {
+    if (step === 3 && roamerRef.current) {
+      const r = roamerRef.current;
+      voice.play('star');
+      r.perform('hop').then(() => {
+        setTimeout(() => {
+          if (!r.dead && !r.busy) r.perform('hop');
+        }, 180);
+      });
+    }
+  }, [step, voice]);
+
+  /* Her full screen-grab intro, then an alarm take, then the first line. */
   const greeted = useRef(null);
   const onReady = useCallback(async (roamer) => {
     if (!roamer || greeted.current === roamer) return;
@@ -110,6 +122,12 @@ export default function App() {
 
   const text = step >= 0 ? LINES[step][0] : '';
 
+  const handleSignalSent = useCallback(() => {
+    if (roamerRef.current && !roamerRef.current.busy) {
+      roamerRef.current.perform('victory');
+    }
+  }, []);
+
   return (
     <div className="uc" onClick={onStage}>
       <div className="uc-bg" aria-hidden="true" />
@@ -136,6 +154,8 @@ export default function App() {
         fxRef={fxRef}
         onReady={onReady}
       />
+
+      <SignalBox voice={voice} onSignalSent={handleSignalSent} />
 
       <p className="uc-sr" role="status">
         {text || 'web ini sedang dibangun. shiroo sedang di hackathon. silakan kembali lagi nanti.'}

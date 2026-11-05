@@ -93,6 +93,260 @@ body {
   pointer-events: none;
 }
 
+/* ================= SIGNAL BOX & TICKER ================= */
+.signal-ticker {
+  position: absolute;
+  left: clamp(14px, 3vw, 32px);
+  bottom: clamp(14px, 2.5svh, 24px);
+  z-index: 75;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(14, 9, 24, 0.88);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 14px rgba(255, 46, 136, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  max-width: min(440px, 86vw);
+  border-radius: 4px;
+}
+
+.signal-trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 46, 136, 0.16);
+  border: 1px solid rgba(255, 46, 136, 0.45);
+  color: var(--ink);
+  font-family: var(--font-disp);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  padding: 4px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.signal-trigger:hover {
+  background: var(--magenta);
+  color: #120010;
+  box-shadow: 0 0 12px var(--magenta);
+}
+
+.signal-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: ucBlink 1.4s infinite;
+}
+
+.signal-stream {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.signal-line {
+  display: inline-flex;
+  gap: 6px;
+  animation: signalFade 0.4s ease;
+}
+@keyframes signalFade {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.signal-author {
+  font-style: normal;
+  color: var(--cyan);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.signal-content {
+  color: #d8d2ea;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 260px;
+}
+
+.signal-idle {
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+/* Modal Backdrop */
+.signal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(5, 3, 10, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.signal-modal {
+  width: min(480px, 94vw);
+  background: linear-gradient(180deg, rgba(20, 12, 34, 0.98), rgba(12, 7, 22, 0.99));
+  border: 1px solid var(--magenta);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 46, 136, 0.25);
+  padding: 22px 24px 20px;
+  position: relative;
+  border-radius: 2px;
+}
+
+.signal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 46, 136, 0.25);
+  padding-bottom: 12px;
+}
+
+.signal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-disp);
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--ink);
+}
+
+.signal-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--magenta);
+  box-shadow: 0 0 10px var(--magenta);
+}
+
+.signal-close {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+}
+.signal-close:hover { color: var(--ink); }
+
+.signal-subtitle {
+  font-size: 11px;
+  color: var(--dim);
+  margin: 12px 0 14px;
+  line-height: 1.5;
+}
+
+.signal-callsign-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+}
+.signal-callsign-label { color: var(--dim); letter-spacing: 0.1em; }
+.signal-callsign-val {
+  color: var(--amber);
+  background: rgba(255, 198, 92, 0.12);
+  border: 1px solid rgba(255, 198, 92, 0.35);
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.signal-reroll {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--dim);
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.signal-reroll:hover { color: var(--cyan); border-color: var(--cyan); }
+
+.signal-input {
+  width: 100%;
+  background: rgba(8, 4, 14, 0.85);
+  border: 1px solid rgba(255, 46, 136, 0.32);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 2px;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+}
+.signal-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(34, 230, 255, 0.25);
+}
+
+.signal-charcount {
+  text-align: right;
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 5px;
+}
+
+.signal-err {
+  font-size: 11px;
+  color: #ff6b8b;
+  margin-top: 8px;
+}
+
+.signal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.signal-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  padding: 8px 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signal-btn-ghost {
+  background: none;
+  border: 1px solid rgba(139, 130, 166, 0.35);
+  color: var(--dim);
+}
+.signal-btn-ghost:hover { color: var(--ink); border-color: var(--line); }
+
+.signal-btn-primary {
+  background: var(--magenta);
+  border: 1px solid var(--magenta);
+  color: #100010;
+  font-weight: 700;
+  box-shadow: 0 0 14px rgba(255, 46, 136, 0.35);
+}
+.signal-btn-primary:hover:not(:disabled) {
+  background: #ff529f;
+  box-shadow: 0 0 20px rgba(255, 46, 136, 0.55);
+}
+.signal-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .uc-sr {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip-path: inset(50%); white-space: nowrap;
